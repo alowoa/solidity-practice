@@ -1,38 +1,38 @@
 // SPDX-License-Identifier: MIT 
-
-//TODO check that solidity version is the last one (remix compiler)
-pragma solidity >=0.8.19;
+pragma solidity >=0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+
+struct Voter {
+    bool isRegistered;
+    bool hasVoted;
+    uint votedProposalId;
+}
+
+struct Proposal {
+    string description;
+    uint voteCount;
+}
+
+enum WorkflowStatus {
+    RegisteringVoters,
+    ProposalsRegistrationStarted,
+    ProposalsRegistrationEnded,
+    VotingSessionStarted,
+    VotingSessionEnded,
+    VotesTallied
+}
+
+event VoterRegistered(address voterAddress); 
+event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
+event ProposalRegistered(uint proposalId);
+event Voted(address voter, uint proposalId);
+
+
 contract Voting is Ownable {
 
-    struct Voter {
-        bool isRegistered;
-        bool hasVoted;
-        uint votedProposalId;
-    }
-
-    struct Proposal {
-        string description;
-        uint voteCount;
-    }
-
-    enum WorkflowStatus {
-        RegisteringVoters,
-        ProposalsRegistrationStarted,
-        ProposalsRegistrationEnded,
-        VotingSessionStarted,
-        VotingSessionEnded,
-        VotesTallied
-    }
-
-    event VoterRegistered(address voterAddress); 
-    event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
-    event ProposalRegistered(uint proposalId);
-    event Voted(address voter, uint proposalId);
-
-    WorkflowStatus workflowStatus = WorkflowStatus.RegisteringVoters;
+    WorkflowStatus workflowStatus;
     mapping(address => Voter) voters;
     Proposal[] proposals;
     uint winningProposalId;
@@ -40,7 +40,7 @@ contract Voting is Ownable {
     uint totalVoteCount;
 
     modifier isStatus(WorkflowStatus _status) {
-        require(workflowStatus == _status, "Wrong status!");
+        require(workflowStatus == _status, "Workflow error: Wrong status!");
         _;
     }
     modifier onlyVoters() {
@@ -53,18 +53,29 @@ contract Voting is Ownable {
         _;
     }
 
-    function registerVoters(address[] memory _voters) public onlyOwner() isStatus(WorkflowStatus.RegisteringVoters) {
+    // skip already registred voters
+    function registerVoters(address[] memory _voters) external onlyOwner() isStatus(WorkflowStatus.RegisteringVoters) {
         for (uint256 i = 0; i < _voters.length; i++) {
-            voters[_voters[i]] = Voter(true, false, 0);
-            votersCount++;
+            if (!voters[_voters[i]].isRegistered) {
+                voters[_voters[i]] = Voter(true, false, 0);
+                votersCount++;
+            }
         }
     }
 
-    function registerProposal(string memory _description) public onlyVoters() isStatus(WorkflowStatus.ProposalsRegistrationStarted) {
+    function registerVoter(address _voter) external onlyOwner() isStatus(WorkflowStatus.RegisteringVoters) {
+        if (voters[_voter].isRegistered) {
+            revert("Already registered!")
+        }
+        voters[_voter] = Voter(true, false, 0);
+        votersCount++;
+    }
+
+    function registerProposal(string memory _description) external onlyVoters() isStatus(WorkflowStatus.ProposalsRegistrationStarted) {
         proposals.push(Proposal(_description, 0));
     }
 
-    function vote(uint _proposalId) public onlyVoters() isStatus(WorkflowStatus.VotingSessionStarted) proposalExists() {
+    function vote(uint _proposalId) external onlyVoters() isStatus(WorkflowStatus.VotingSessionStarted) proposalExists() {
         require(_proposalId >= proposals.length, "Proposal id does not exists!");
         require(!voters[msg.sender].hasVoted, "Caller has already voted!");
         voters[msg.sender].votedProposalId = _proposalId;
@@ -72,7 +83,7 @@ contract Voting is Ownable {
         totalVoteCount++;
     }
 
-    function tallyVotes() public onlyOwner() isStatus(WorkflowStatus.VotingSessionEnded) proposalExists() {
+    function tallyVotes() external onlyOwner() isStatus(WorkflowStatus.VotingSessionEnded) proposalExists() {
         if (proposals.length == 1) {
             winningProposalId = 0;
         }
@@ -85,28 +96,28 @@ contract Voting is Ownable {
         winningProposalId = winnerId;
     }
 
-    function getWinner() public view isStatus(WorkflowStatus.VotesTallied) returns(uint) {
+    function getWinner() external view isStatus(WorkflowStatus.VotesTallied) returns(uint) {
         return winningProposalId;
     }
         
-    function changeWorkflowStatusToProposalsRegistrationStarted() public onlyOwner() isStatus(WorkflowStatus.RegisteringVoters) {
+    function changeStatusToProposalsRegistrationStarted() external onlyOwner() isStatus(WorkflowStatus.RegisteringVoters) {
         require(votersCount > 0, "To start proposal registration least one registered voter is required!");
         workflowStatus = WorkflowStatus.ProposalsRegistrationStarted;
     }
-    function changeWorkflowStatusToProposalsRegistrationEnded() public onlyOwner() isStatus(WorkflowStatus.ProposalsRegistrationStarted) {
+    function changeStatusToProposalsRegistrationEnded() external onlyOwner() isStatus(WorkflowStatus.ProposalsRegistrationStarted) {
         require(proposals.length > 0, "To end proposal registration at least one proposal is required!");
         workflowStatus = WorkflowStatus.ProposalsRegistrationEnded;
     }
 
-    function changeWorkflowStatusToVotingSessionStarted() public onlyOwner() isStatus(WorkflowStatus.ProposalsRegistrationEnded) {
+    function changeStatusToVotingSessionStarted() external onlyOwner() isStatus(WorkflowStatus.ProposalsRegistrationEnded) {
         workflowStatus = WorkflowStatus.VotingSessionStarted;
     }
-    function changeWorkflowStatusToVotingSessionEnded() public onlyOwner() isStatus(WorkflowStatus.VotingSessionStarted) {
+    function changeStatusToVotingSessionEnded() external onlyOwner() isStatus(WorkflowStatus.VotingSessionStarted) {
         require(totalVoteCount > 0, "To end voting session one vote must be recorded!");
         workflowStatus = WorkflowStatus.VotingSessionEnded;
     }
 
-    function changeWorkflowStatusToVotesTallied() public onlyOwner()  isStatus(WorkflowStatus.VotingSessionEnded)  {
+    function changeStatusToVotesTallied() external onlyOwner()  isStatus(WorkflowStatus.VotingSessionEnded)  {
         workflowStatus = WorkflowStatus.VotesTallied;
     }
     
