@@ -65,8 +65,8 @@ contract Voting is Ownable {
     }
 
     modifier validateProposal() {
-        if (proposals.length >= 0) { 
-            revert NotEnoughProposals(0, proposals.length);
+        if (proposals.length < 1) { 
+            revert NotEnoughProposals(1, proposals.length);
         }
         _;
     }
@@ -104,13 +104,14 @@ contract Voting is Ownable {
             revert BallotAlreadyConsumed();
         }
         voters[msg.sender].votedProposalId = _proposalId;
+        voters[msg.sender].hasVoted = true;
         proposals[_proposalId-1].voteCount++;
         totalVoteCount++;
         emit Voted(msg.sender, _proposalId);
     }
 
     function tallyVotes() external onlyOwner() isStatus(WorkflowStatus.VotingSessionEnded) validateProposal() {
-        //TODO check perf temp variable vs direct storage variable usage on iteration
+        //TODO (optional) compare memory variables vs storage variable usage on iteration
         bool voteDraw;
         uint winnerId;
         for (uint256 i = 0; i < proposals.length; i++) {
@@ -138,6 +139,13 @@ contract Voting is Ownable {
         }
         return winningProposalId;
     }
+    
+    function getWinninProposalDetails() external view isStatus(WorkflowStatus.VotesTallied) returns(string memory, uint) {
+        if (draw) {
+            revert VoteDraw();
+        }
+        return (proposals[winningProposalId-1].description, proposals[winningProposalId-1].voteCount);
+    } 
         
     function startProposalsRegistration() external onlyOwner() isStatus(WorkflowStatus.RegisteringVoters) {
         if (votersCount == 0) {
