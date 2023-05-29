@@ -139,14 +139,14 @@ contract Voting is Ownable {
         return winningProposalId;
     }
         
-    function changeStatusToProposalsRegistrationStarted() external onlyOwner() isStatus(WorkflowStatus.RegisteringVoters) {
+    function startProposalsRegistration() external onlyOwner() isStatus(WorkflowStatus.RegisteringVoters) {
         if (votersCount == 0) {
             revert NotEnoughVoterRegistred(1, votersCount);
         }
         workflowStatus = WorkflowStatus.ProposalsRegistrationStarted;
         emit WorkflowStatusChange(WorkflowStatus.RegisteringVoters, WorkflowStatus.ProposalsRegistrationStarted);
     }
-    function changeStatusToProposalsRegistrationEnded() external onlyOwner() isStatus(WorkflowStatus.ProposalsRegistrationStarted) {
+    function endProposalsRegistration() external onlyOwner() isStatus(WorkflowStatus.ProposalsRegistrationStarted) {
         if (proposals.length == 0) { 
             revert NotEnoughProposals(0, proposals.length);
         }
@@ -154,11 +154,11 @@ contract Voting is Ownable {
         emit WorkflowStatusChange(WorkflowStatus.ProposalsRegistrationStarted, WorkflowStatus.ProposalsRegistrationEnded);
     }
 
-    function changeStatusToVotingSessionStarted() external onlyOwner() isStatus(WorkflowStatus.ProposalsRegistrationEnded) {
+    function startVotingSession() external onlyOwner() isStatus(WorkflowStatus.ProposalsRegistrationEnded) {
         workflowStatus = WorkflowStatus.VotingSessionStarted;
         emit WorkflowStatusChange(WorkflowStatus.ProposalsRegistrationEnded, WorkflowStatus.VotingSessionStarted);
     }
-    function changeStatusToVotingSessionEnded() external onlyOwner() isStatus(WorkflowStatus.VotingSessionStarted) {
+    function endVotingSession() external onlyOwner() isStatus(WorkflowStatus.VotingSessionStarted) {
         // as people make proposal, 0 votes should not appears 
         if (totalVoteCount == 0) { 
             revert NotEnoughVotes(1, 0);
