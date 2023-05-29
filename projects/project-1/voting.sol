@@ -58,7 +58,7 @@ contract Voting is Ownable {
         _;
     }
     modifier onlyVoters() {
-        if (voters[msg.sender].isRegistered) {
+        if (!voters[msg.sender].isRegistered) {
             revert Unauthorized();
         }
         _;
