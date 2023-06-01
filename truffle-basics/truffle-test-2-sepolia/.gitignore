@@ -1,0 +1,4 @@
+node_modules/
+.ganache-mnemonic
+build/
+.env

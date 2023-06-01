@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "ganache": "ganache -m \"`cat .ganache-mnemonic`\""
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.0",
+    "@truffle/hdwallet-provider": "^2.1.11",
+    "dotenv": "^16.1.3"
+  }
+}
