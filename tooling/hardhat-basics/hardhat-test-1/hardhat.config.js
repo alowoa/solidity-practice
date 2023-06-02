@@ -1,10 +1,10 @@
-require("@nomicfoundation/hardhat-toolbox")
-require("dotenv").config()
-require("@nomiclabs/hardhat-etherscan")
+require("@nomicfoundation/hardhat-toolbox");
+require("dotenv").config();
+require("@nomiclabs/hardhat-etherscan");
 
-const PK = process.env.ALCHEMY_ID__TEST_APP_SEPOLIA || ""
-const RPC_URL = process.env.RPC_URL || ""
-const ETHERSCAN = process.env.ETHERSCAN || ""
+const PK = process.env.ALCHEMY_ID__TEST_APP_SEPOLIA || "";
+const RPC_URL = process.env.RPC_URL || "";
+const ETHERSCAN = process.env.ETHERSCAN || "";
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {

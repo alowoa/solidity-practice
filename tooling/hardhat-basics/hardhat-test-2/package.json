@@ -2,10 +2,12 @@
   "name": "hardhat-project",
   "scripts": {
     "compile": "npx hardhat compile",
-    "deploy": "npx hardhat run scripts/deploy.js",
-    "deploy-local": "npx hardhat run scripts/deploy.js --network localhost",
+    "deploy": "npx hardhat run scripts/01_deploy.js",
+    "deploy-local": "npx hardhat run scripts/01_deploy.js --network localhost",
+    "deploy-sepolia": "npx hardhat run scripts/01_deploy.js --network sepolia",
     "node": "npx hardhat node",
-    "script-increment-local": "npx hardhat run scripts/99_increment.js --network localhost "
+    "script-increment-local": "npx hardhat run scripts/99_increment.js --network localhost ",
+    "verify-sepolia": "npx hardhat verify --network sepolia "
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.2",
