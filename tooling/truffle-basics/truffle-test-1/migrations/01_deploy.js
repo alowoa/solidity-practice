@@ -1,14 +1,13 @@
 const Storage = artifacts.require("Storage");
-
-const deployEthAmount = 1000000000000000000;
-//const accountA = "0xeD8B177F2506a6F7Cd81c3720a21220EC15f25d2";
+ 
+const MIN_DEPOSIT_AMOUNT = 1_000_000_000; // 1 gwei 
 const data = 21;
 
 module.exports = function (deployer, network, accounts) {
 
-  deployer.deploy(Storage, deployEthAmount, {
+  deployer.deploy(Storage, MIN_DEPOSIT_AMOUNT, 777, {
     from: `${accounts[0]}`,
-    value: deployEthAmount
+    value: MIN_DEPOSIT_AMOUNT
   });
 
 };
