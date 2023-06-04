@@ -12,19 +12,25 @@ The goal is to implement testing with some attention to the returns (revert, eve
 
 ## Tooling
 
-The project uses of hardhat in order to try testing implementation with hardhat.
+The project uses of hardhat to manage the project. Testing is done with web3js and Truffle.
  
 ## Running the tests
 
 Start a node from a secondary terminal:
 
-    npx hardhat node
+    npm run start:node
+
+To deploy the contract:
+
+    npm run migrate
 
 Run the tests from your main terminal:
 
-    npx hardhat test
+    npm run test
 
 ## About the tests
+
+All tests are written into `test/Voting.truffle.test.js`.
 
 The "users" in our use cases are the owner, voters and unregistered voters.
 

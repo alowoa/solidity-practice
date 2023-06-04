@@ -1,4 +1,6 @@
 const Voting = artifacts.require("Voting");
+const TestVoting = artifacts.require("TestVoting");
+const WorkflowStatusTestUtil = artifacts.require("WorkflowStatusTestUtil");
 
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const { expect } = require("chai");
@@ -12,102 +14,181 @@ const { web3 } = require("hardhat");
 
 describe("Voting contract", () => {
 
-  let accounts;
+  let ownerAddr, userAddr1, userAddr2, userAddr3;
+  let voting;
+  let workflowStatusTestUtil;
 
   before(async () => {
-    accounts = await web3.eth.getAccounts();
+    const accounts = await web3.eth.getAccounts();
+    ownerAddr = accounts[0];
+    userAddr1 = accounts[1];
+    userAddr2 = accounts[2];
+    userAddr3 = accounts[3];
+    voting = await TestVoting.new();
+    workflowStatusTestUtil = await WorkflowStatusTestUtil.new();
+    console.log("-- fixtures for Voting contract loaded --")
   });
- 
-
-  async function deployContractFixture() {
-    const await Voting.deplyed();
-    const Voting = await ethers.getContractFactory("Voting");
-    const [owner, addr1, addr2] = await ethers.getSigners();
-    const votingContract = await Voting.deploy();
-    await votingContract.deployed();
-    return { Voting, votingContract, owner, addr1, addr2 };
-  }
-
+   
   describe("Deployed contract validation", () => {
-    it("should set owner", async () => {
-      // GIVEN signers context WHEN contract deployed
-      const { votingContract, owner } = await loadFixture(deployContractFixture);
-      // THEN
-      expect(await votingContract.owner()).to.be.equal(owner.address);
-    });
-    it("should have initial value of 0 for workflow status", async () => {
-      // GIVEN signers context WHEN contract deployed
-      const { votingContract, owner } = await loadFixture(deployContractFixture);
-      // THEN
-      expect(await votingContract.workflowStatus()).to.be.equal(0);
-    });
+    it("should get proper initial values", async () => {
+      expect(await voting.owner()).equal(ownerAddr);
+      expect((await voting.isRegisteringVotersStatus())).true;
+    }); 
   });
- 
 
-  describe("RegisteringVoters phase", () => {
-
-    // describe("As owner", () => {
-    //   it("should register a new voter", async () => {
-    //     const { votingContract, owner, addr1 } = await loadFixture(deployContractFixture);
-        
-    //     const addVoterTx = await votingContract.addVoter(addr1.address);
-    //     console.log(addVoterTx);
-    //     expectEvent(addVoterTx, 'VoterRegistered', {voterAddress: addr1.address})
-        
-    //     // let result = await votingContract.voters;
-    //     // console.log(result);
-
-    //     // expect(voters[addr1].address).to.be.equal(addr1.address);
-    //     // expect(voters[addr1].address).to.be.equal(addr1.address);
-    //   });
-    //   // it("should fails to register already registerd voter", async () => {
-    //   //   const { votingContract, owner, addr1 } = await loadFixture(deployContractFixture);
-    //   //   votingContract.addVoter()
-    //   // });
-    // });
-
-    //TODO unintended cases
-
+  describe("Registering voters phase", () => {
+    describe("As owner", () => {
+      it("should register a new voter", async () => {
+        // WHEN  
+        const tx = await voting.addVoter(userAddr1);
+        // THEN
+        expect((await voting.voter(userAddr1)).isRegistered).true;
+        expectEvent(tx, 'VoterRegistered', {voterAddress: userAddr1});
+      });
+      it("should start proposal", async () => {
+        // WHEN  
+        const tx = await voting.startProposalsRegistering(); 
+        // THEN
+        const proposals = await voting.proposalArray();
+        expect(proposals.length).equal(1);
+        expect(proposals[0].description).equal("GENESIS");
+        expect(+proposals[0].voteCount).equal(0);
+        expectEvent(tx, 'WorkflowStatusChange', {
+          previousStatus: await workflowStatusTestUtil.valueOfRegisteringVoters(),
+          newStatus: await workflowStatusTestUtil.valueOfProposalsRegistrationStarted()
+        });
+      });
+    });
   });
 
   describe("ProposalsRegistrationStarted phase", () => {
 
-    describe("Owner use case", () => {
-  
+    before(async () => { 
+      voting = await TestVoting.new(); 
+      await voting.addVoter(userAddr1);
+      await voting.startProposalsRegistering(); 
+      console.log("-- fixture for ProposalsRegistrationStarted loaded --")
+    });
+
+    describe("As voter", () => {
+      it("add proposal", async () => {
+        const initialProposalCount = (await voting.proposalArray()).length;
+        // WHEN  
+        const addProposalTx = await voting.addProposal("Test proposal", {from: userAddr1});
+        // THEN
+        const proposals = await voting.proposalArray();
+        expect(proposals.length).equal(initialProposalCount+1);
+        const newProposal = proposals[proposals.length-1];
+        expect(newProposal.description).equal("Test proposal");
+        expect(+newProposal.voteCount).equal(0);
+        expectEvent(addProposalTx, 'ProposalRegistered', {
+          proposalId: new BN(proposals.length-1)
+        });
+      });
+    });
+    
+    describe("As owner", () => {
+      it("should end proposal phase", async () => {
+        // WHEN  
+        const tx = await voting.endProposalsRegistering(); 
+        // THEN
+        expectEvent(tx, 'WorkflowStatusChange', {
+          previousStatus: await workflowStatusTestUtil.valueOfProposalsRegistrationStarted(),
+          newStatus: await workflowStatusTestUtil.valueOfProposalsRegistrationEnded()
+        });
+      });
     });
 
   });
 
   describe("ProposalsRegistrationEnded phase", () => {
 
-    describe("Owner use case", () => {
- 
+    before(async () => { 
+      voting = await TestVoting.new();  
+      await voting.startProposalsRegistering(); 
+      await voting.endProposalsRegistering(); 
+      console.log("-- fixture for ProposalsRegistrationEnded loaded --")
     });
 
+    describe("As owner", () => {
+      it("should start voting session", async () => {
+        // WHEN  
+        const tx = await voting.startVotingSession(); 
+        // THEN
+        expectEvent(tx, 'WorkflowStatusChange', {
+          previousStatus: await workflowStatusTestUtil.valueOfProposalsRegistrationEnded(),
+          newStatus: await workflowStatusTestUtil.valueOfVotingSessionStarted()
+        });
+      });
+    });
   });
 
   describe("VotingSessionStarted phase", () => {
 
-    describe("Owner use case", () => {
+    before(async () => { 
+      voting = await TestVoting.new();  
+      await voting.startProposalsRegistering(); 
+      await voting.endProposalsRegistering(); 
+      await voting.startVotingSession(); 
+      console.log("-- fixture for ProposalsRegistrationEnded loaded --")
+    });
 
+    describe("As owner", () => {
+      it("should end voting session", async () => {
+        // WHEN  
+        const tx = await voting.endVotingSession(); 
+        // THEN
+        expectEvent(tx, 'WorkflowStatusChange', {
+          previousStatus: await workflowStatusTestUtil.valueOfVotingSessionStarted(),
+          newStatus: await workflowStatusTestUtil.valueOfVotingSessionEnded()
+        });
+      });
     });
 
   });
 
   describe("VotingSessionEnded phase", () => {
 
-    describe("Owner use case", () => {
-
+    before(async () => { 
+      voting = await TestVoting.new();  
+      await voting.startProposalsRegistering(); 
+      await voting.endProposalsRegistering(); 
+      await voting.startVotingSession(); 
+      await voting.endVotingSession(); 
+      console.log("-- fixture for ProposalsRegistrationEnded loaded --")
     });
+
+    describe("As owner", () => {
+      it("should tally votes session", async () => {
+        // WHEN  
+        const tx = await voting.tallyVotes(); 
+        // THEN
+        expectEvent(tx, 'WorkflowStatusChange', {
+          previousStatus: await workflowStatusTestUtil.valueOfVotingSessionEnded(),
+          newStatus: await workflowStatusTestUtil.valueOfVotesTallied()
+        });
+      });
+    });
+
 
   });
 
   describe("VotesTallied phase", () => {
 
-    describe("Owner use case", () => {
-
+    before(async () => { 
+      voting = await TestVoting.new();  
+      await voting.startProposalsRegistering(); 
+      await voting.endProposalsRegistering(); 
+      await voting.startVotingSession(); 
+      await voting.endVotingSession(); 
+      await voting.tallyVotes(); 
+      console.log("-- fixture for ProposalsRegistrationEnded loaded --")
     });
 
+    describe("As voters", () => {
+     
+      
+    });
   });
 
 });

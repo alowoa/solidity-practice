@@ -2,11 +2,11 @@ const hre = require("hardhat");
 
 async function main() {
   const Voting = await hre.ethers.getContractFactory("Voting");
-  const voting = await Lock.deploy();
+  const voting = await Voting.deploy();
 
   await voting.deployed();
 
-  console.log(`Voting deployed to ${lock.address}`);
+  console.log(`Voting deployed to ${voting.address}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -1,8 +1,8 @@
 {
   "scripts": {
     "compile": "npx hardhat compile",
-    "migrate": "npx hardhat migrate",
-    "test": "npx hardhat test",
+    "migrate": "npx hardhat run scripts/deploy.js",
+    "test": "npx hardhat test test/Voting.truffle.test.js",
     "start:node": "npx hardhat node"
   },
   "devDependencies": {
