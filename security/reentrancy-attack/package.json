@@ -2,7 +2,10 @@
   "name": "hardhat-project",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+<<<<<<< HEAD
     "@openzeppelin/contracts": "^4.9.1",
+=======
+>>>>>>> dc24363 (rentrancy exercice)
     "hardhat": "^2.15.0"
   }
 }

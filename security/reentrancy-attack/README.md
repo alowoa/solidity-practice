@@ -18,6 +18,7 @@ Requirements:
 
 Scenario:
 - Create a vault 
+<<<<<<< HEAD
 - User A store some ether
 - Attacker deploy a contract to interact with Vault
 - (Attacker could have seen a big storage stransfer or lookup through the contract logs)
@@ -40,3 +41,21 @@ npx hardhat test
 ```
 
 Usable on remix.
+=======
+- User A store some 10 ether
+- Attacker deploy a contract to interact with Vault
+- (Attacker could have seen a big storage stransfer or lookup through the contract logs)
+- Attacker store 0.1 ether
+- Attacker start his attack with a redeem call (then loop 100 more time to empty take the 1 ether)
+
+
+## Try running some of the following tasks:
+
+```shell
+npx hardhat help
+npx hardhat test
+REPORT_GAS=true npx hardhat test
+npx hardhat node
+npx hardhat run scripts/deploy.js
+```
+>>>>>>> dc24363 (rentrancy exercice)
