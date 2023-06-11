@@ -1,4 +1,6 @@
 const { expect, assert } = require("chai");
+const { BN } = require('@openzeppelin/test-helpers');
+const expectEvent = require("@openzeppelin/test-helpers/src/expectEvent");
 
 describe("SimpleStorage", function () {
 
@@ -17,7 +19,7 @@ describe("SimpleStorage", function () {
   describe("Initialization", function () {
     it('should get the number and the number should be equal to 0', async function () {
       let number = await simpleStorage.getNumber();
-      expect(number.toString()).to.be.equal("0");
+      expect(number.toString()).equal("0");
     })
   })
 
@@ -26,7 +28,8 @@ describe("SimpleStorage", function () {
       let transaction = await simpleStorage.setNumber(7);
       await transaction.wait();
       let number = await simpleStorage.getNumber();
-      assert(number.toString() === "7");
+      expect(number).equal(new BN(7));
+      expectEvent(transaction, 'ValueStored', {value: newValue})
     })
   });
 });

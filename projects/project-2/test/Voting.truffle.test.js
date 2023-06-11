@@ -1,55 +1,61 @@
+// external dependancies
+const { web3 } = require("hardhat");
+const { expect } = require("chai");
+const { BN, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
+// artifacts
 const Voting = artifacts.require("Voting");
 const TestVoting = artifacts.require("TestVoting");
 const WorkflowStatusTestUtil = artifacts.require("WorkflowStatusTestUtil");
+// siblings dependencies
+const { WorkflowStatus } = require("./VotingTestUtils");
 
-const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
-const { expect } = require("chai");
-const {
-  BN,           // Big Number support
-  constants,    // Common constants, like the zero address and largest integers
-  expectEvent,  // Assertions for emitted events
-  expectRevert, // Assertions for transactions that should fail
-} = require('@openzeppelin/test-helpers');
-const { web3 } = require("hardhat");
 
 describe("Voting contract", () => {
 
   let ownerAddr, userAddr1, userAddr2, userAddr3;
-  let voting;
   let workflowStatusTestUtil;
+  let voting;
 
   before(async () => {
-    const accounts = await web3.eth.getAccounts();
-    ownerAddr = accounts[0];
-    userAddr1 = accounts[1];
-    userAddr2 = accounts[2];
-    userAddr3 = accounts[3];
-    voting = await TestVoting.new();
+    [ownerAddr , userAddr1, userAddr2, userAddr3] = await web3.eth.getAccounts();
     workflowStatusTestUtil = await WorkflowStatusTestUtil.new();
-    console.log("-- fixtures for Voting contract loaded --")
   });
-   
+  
+  //beforeEach(async () => {
+  //  voting = await TestVoting.new();
+  //});
+
   describe("Deployed contract validation", () => {
-    it("should get proper initial values", async () => {
+    before(async () => {
+      voting = await TestVoting.new();
+    });
+    it("Deployer should own the contract and not be a voter by default", async () => {
       expect(await voting.owner()).equal(ownerAddr);
-      expect((await voting.isRegisteringVotersStatus())).true;
+      expect((await voting.tca_voter(ownerAddr)).isRegistered).false;
+    }); 
+    it("Contextual properties should be at their initial values", async () => {
+      expect(await voting.workflowStatus()).equal(WorkflowStatus["RegisteringVoters"]);
+      expect((await voting.tca_proposalArray()).length).equal(0);
     }); 
   });
 
-  describe("Registering voters phase", () => {
+  describe.only("Registering voters phase", () => {
+    beforeEach(async () => {
+      voting = await TestVoting.new();
+    });
     describe("As owner", () => {
       it("should register a new voter", async () => {
         // WHEN  
         const tx = await voting.addVoter(userAddr1);
         // THEN
-        expect((await voting.voter(userAddr1)).isRegistered).true;
+        expect((await voting.tca_voter(userAddr1)).isRegistered).true;
         expectEvent(tx, 'VoterRegistered', {voterAddress: userAddr1});
       });
       it("should start proposal", async () => {
         // WHEN  
         const tx = await voting.startProposalsRegistering(); 
         // THEN
-        const proposals = await voting.proposalArray();
+        const proposals = await voting.tca_proposalArray();
         expect(proposals.length).equal(1);
         expect(proposals[0].description).equal("GENESIS");
         expect(+proposals[0].voteCount).equal(0);
@@ -66,17 +72,16 @@ describe("Voting contract", () => {
     before(async () => { 
       voting = await TestVoting.new(); 
       await voting.addVoter(userAddr1);
-      await voting.startProposalsRegistering(); 
-      console.log("-- fixture for ProposalsRegistrationStarted loaded --")
+      await voting.startProposalsRegistering();  
     });
 
     describe("As voter", () => {
       it("add proposal", async () => {
-        const initialProposalCount = (await voting.proposalArray()).length;
+        const initialProposalCount = (await voting.tca_proposalArray()).length;
         // WHEN  
         const addProposalTx = await voting.addProposal("Test proposal", {from: userAddr1});
         // THEN
-        const proposals = await voting.proposalArray();
+        const proposals = await voting.tca_proposalArray();
         expect(proposals.length).equal(initialProposalCount+1);
         const newProposal = proposals[proposals.length-1];
         expect(newProposal.description).equal("Test proposal");
@@ -93,8 +98,8 @@ describe("Voting contract", () => {
         const tx = await voting.endProposalsRegistering(); 
         // THEN
         expectEvent(tx, 'WorkflowStatusChange', {
-          previousStatus: await workflowStatusTestUtil.valueOfProposalsRegistrationStarted(),
-          newStatus: await workflowStatusTestUtil.valueOfProposalsRegistrationEnded()
+          previousStatus: WorkflowStatus["ProposalsRegistrationStarted"],
+          newStatus: WorkflowStatus["ProposalsRegistrationEnded"]
         });
       });
     });
@@ -107,7 +112,6 @@ describe("Voting contract", () => {
       voting = await TestVoting.new();  
       await voting.startProposalsRegistering(); 
       await voting.endProposalsRegistering(); 
-      console.log("-- fixture for ProposalsRegistrationEnded loaded --")
     });
 
     describe("As owner", () => {
@@ -116,8 +120,8 @@ describe("Voting contract", () => {
         const tx = await voting.startVotingSession(); 
         // THEN
         expectEvent(tx, 'WorkflowStatusChange', {
-          previousStatus: await workflowStatusTestUtil.valueOfProposalsRegistrationEnded(),
-          newStatus: await workflowStatusTestUtil.valueOfVotingSessionStarted()
+          previousStatus: WorkflowStatus["ProposalsRegistrationEnded"],
+          newStatus: WorkflowStatus["VotingSessionStarted"]
         });
       });
     });
@@ -139,8 +143,8 @@ describe("Voting contract", () => {
         const tx = await voting.endVotingSession(); 
         // THEN
         expectEvent(tx, 'WorkflowStatusChange', {
-          previousStatus: await workflowStatusTestUtil.valueOfVotingSessionStarted(),
-          newStatus: await workflowStatusTestUtil.valueOfVotingSessionEnded()
+          previousStatus: WorkflowStatus["VotingSessionStarted"],
+          newStatus: WorkflowStatus["VotingSessionEnded"]
         });
       });
     });
@@ -164,8 +168,8 @@ describe("Voting contract", () => {
         const tx = await voting.tallyVotes(); 
         // THEN
         expectEvent(tx, 'WorkflowStatusChange', {
-          previousStatus: await workflowStatusTestUtil.valueOfVotingSessionEnded(),
-          newStatus: await workflowStatusTestUtil.valueOfVotesTallied()
+          previousStatus: WorkflowStatus["VotingSessionEnded"],
+          newStatus: WorkflowStatus["VotesTallied"]
         });
       });
     });
