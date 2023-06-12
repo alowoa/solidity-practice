@@ -1,0 +1,17 @@
+{
+  "name": "hardhat-test-01",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start-node": "npx hardhat node",
+    "test": "npx hardhat test",
+    "test-coverage": "npx hardhat coverage"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "@openzeppelin/test-helpers": "^0.5.16",
+    "hardhat": "^2.14.1"
+  }
+}

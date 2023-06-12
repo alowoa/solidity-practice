@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "migrate": "npx hardhat run scripts/deploy.js",
+    "test": "npx hardhat test test/Voting.truffle.test.js",
+    "coverage": "npx hardhat coverage",
+    "node": "npx hardhat node"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "@nomiclabs/hardhat-truffle5": "^2.0.7",
+    "@nomiclabs/hardhat-web3": "^2.0.0",
+    "@openzeppelin/contracts": "^4.9.0",
+    "@openzeppelin/test-helpers": "^0.5.16",
+    "@truffle/contract": "^4.6.22",
+    "hardhat": "^2.15.0",
+    "web3": "^1.10.0"
+  }
+}
