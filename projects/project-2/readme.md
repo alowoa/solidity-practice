@@ -1,45 +1,53 @@
 # Testing the Voting project
  
-## About voting
+## About the project
 
 This `Voting.sol` contract correction has been imported. The only changes are:
 * the import definition 
 * solidity version update from 0.8.13 to 0.8.20
 
-## Goal
+This project implements testing using Hardhat as project setup, with Web3js, Truffle and test-helpers from openzeppelin.
 
-The goal is to implement testing with some attention to the returns (revert, event).
+## Quickstart
 
-## Tooling
+### Requirements
 
-The project uses of hardhat to manage the project. Testing is done with web3js and Truffle.
- 
-## Running the tests
+You should first initialize the project:
+
+    npm install
+
+### Running the tests
 
 Start a node from a secondary terminal:
 
-    npm run start:node
-
-To deploy the contract:
-
-    npm run migrate
+    npm run node
 
 Run the tests from your main terminal:
 
     npm run test
 
-## About the tests
+You can run test coverage with:
 
-All tests are written into `test/Voting.truffle.test.js`.
+    npm run coverage
 
-The "users" in our use cases are the owner, voters and unregistered voters.
+## Some details about the tests
 
-The test cases represent check on the initial contract state and the main use cases grouped by state. 
+## About `test/Voting.truffle.test.js`
 
-- Deployment
-- RegisteringVoters phase:
-- ProposalsRegistrationStarted status
-- ProposalsRegistrationEnded status
-- VotingSessionStarted status
-- VotingSessionEnded
-- VotesTallied
+This is the Voting contract test file. 
+
+Within the test descriptions "users" in our use cases are the owner, voters and unregistered voters.
+
+The test cases validates the initial contract states. They are grouped by WorkflowStatus and follow the logical order.
+
+Inner tests are mainly grouped by access (voter, owner, others).
+
+Methods linked to specific status are tested on each status (see usage of Voting.truffle.test.js: expectRevertOnBadWorkflowStatusChanges) 
+
+
+## About `test/VotingTestUtils.js`
+
+As named, it contains some utilities:
+
+* a "mirror" object matching with the WorkflowStatus enum from the Voting contract to ease the tests
+* a `givenVoting(...)` to ease the testing context on most of the beforeEach function calls
