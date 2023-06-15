@@ -3,9 +3,13 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "@openzeppelin/contracts": "^4.9.1",
 =======
 >>>>>>> dc24363 (rentrancy exercice)
+=======
+    "@openzeppelin/contracts": "^4.9.1",
+>>>>>>> ba9c184 (reentrancy exercice with unit testing & tested on remix)
     "hardhat": "^2.15.0"
   }
 }
