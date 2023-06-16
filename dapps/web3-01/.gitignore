@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 package-lock.json
 secret-config.json
@@ -31,3 +32,8 @@ coverage
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+=======
+secret*
+package-lock.json
+node_modules/
+>>>>>>> 6641df2 (web3js test with a little nodejs script)

@@ -20,8 +20,6 @@ module.exports = {
       network_id: 11155111
     }
     
-
-    https://polygon-mumbai.g.alchemy.com/v2/uf8gZ-RfFgYCG5y07VIJoOJKLCTrMJ3F
   },
 
   // Set default mocha options here, use special reporters, etc.
