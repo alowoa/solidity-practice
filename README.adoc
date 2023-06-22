@@ -1,0 +1,27 @@
+= solidity-practice
+
+A personal repository to learn & practice solidity.
+
+== What's in the repository
+
+----
+/
+├── basics/
+├── dapps/
+├── projects/
+├── security/
+├── testing/
+├── tooling/
+----
+
+basics:: Solidity language practice
+dapps:: Dapps practice
+projects:: Realization of mixed learned knowledge into a projet at a given time
+security:: Solidity oriented security testing or contract helper to reproduce exploits
+testing:: solidity & web3 project testing practice
+testing:: Solidity language practice
+
+
+== License
+
+include::LICENSE.adoc[]
