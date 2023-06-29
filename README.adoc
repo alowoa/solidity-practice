@@ -6,12 +6,13 @@ A personal repository to learn & practice solidity.
 
 ----
 /
-├── basics/
-├── dapps/
-├── projects/
-├── security/
-├── testing/
-├── tooling/
+|-- basics/
+|-- dapps/
+|-- projects/
+|-- security/
+|-- testing/
+|-- tooling/
+|-- clear-deps.sh
 ----
 
 basics:: Solidity language practice
@@ -19,8 +20,8 @@ dapps:: Dapps practice
 projects:: Realization of mixed learned knowledge into a projet at a given time
 security:: Solidity oriented security testing or contract helper to reproduce exploits
 testing:: solidity & web3 project testing practice
-testing:: Solidity language practice
-
+tooling:: tryout of tools related to solidity 
+clear-deps.sh:: A cleaning script to get ride of node_modules through all the sub directories.
 
 == License
 
