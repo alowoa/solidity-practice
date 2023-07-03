@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "ganache": "ganache -m \"`cat .ganache-mnemonic`\""
+    "ganache": "ganache -m \"`cat .ganache-mnemonic`\"",
+    "migrate:MyDai": "npx truffle migrate -f 2",
+    "migrate:defiProject-goerli": "npx truffle migrate -f 3 --network goerli"
   },
   "dependencies": {
     "@openzeppelin/test-helpers": "^0.5.16",

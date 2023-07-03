@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { MNEMONIC, INFURA_ID_TEST_APP_SEPOLIA, ALCHEMY_ID_TEST_APP_SEPOLIA } = process.env;
+const { MNEMONIC, INFURA_ID_TEST_APP, ALCHEMY_ID_TEST_APP_SEPOLIA } = process.env;
 
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 
@@ -14,10 +14,16 @@ module.exports = {
     },
     sepolia: {
       provider: function() {
-        return new HDWalletProvider(MNEMONIC, `https://sepolia.infura.io/v3/${INFURA_ID_TEST_APP_SEPOLIA}`)
+        return new HDWalletProvider(MNEMONIC, `https://sepolia.infura.io/v3/${INFURA_ID_TEST_APP}`)
         //return new HDWalletProvider(MNEMONIC, `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_ID_TEST_APP_SEPOLIA}`)
       },
       network_id: 11155111
+    },
+    goerli: {
+      provider: function() {
+        return new HDWalletProvider(MNEMONIC, `https://goerli.infura.io/v3/${INFURA_ID_TEST_APP}`)
+      },
+      network_id: 5
     }
      
   },
